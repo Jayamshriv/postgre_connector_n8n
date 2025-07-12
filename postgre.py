@@ -3,7 +3,6 @@ import psycopg2
 
 app = Flask(__name__)
 
-# Fallback static niches
 STATIC_NICHES = {
     'productivity_tools': {'avg_commission': 25, 'search_volume': 50000},
     'ai_software': {'avg_commission': 30, 'search_volume': 80000},
@@ -32,17 +31,18 @@ def top_niches():
         conn.close()
 
         if not rows:
-            # Convert STATIC_NICHES dict to a list
             fallback = [
                 {"niche": key, **value}
                 for key, value in STATIC_NICHES.items()
             ]
-            return jsonify(fallback)
+            return jsonify({"data": fallback})
 
-        result = [
-            {"niche": row[0], "avg_clicks": row[1], "avg_conversion": row[2]}
-            for row in rows
-        ]
+        result = {
+            "data": [
+                {"niche": row[0], "avg_clicks": row[1], "avg_conversion": row[2]}
+                for row in rows
+            ]
+        }
         return jsonify(result)
 
     except Exception as e:
