@@ -1,6 +1,5 @@
 from flask import Flask, jsonify
 import psycopg2
-import os
 
 app = Flask(__name__)
 
@@ -17,7 +16,7 @@ STATIC_NICHES = {
 def top_niches():
     try:
         conn = psycopg2.connect(
-          'postgres://avnadmin:AVNS_hBv5Kw4EtMNgdR5NOQK@pg-30f45208-abarakadabara698-7bd8.j.aivencloud.com:10038/defaultdb?sslmode=require'
+            'postgres://avnadmin:AVNS_hBv5Kw4EtMNgdR5NOQK@pg-30f45208-abarakadabara698-7bd8.j.aivencloud.com:10038/defaultdb?sslmode=require'
         )
         cur = conn.cursor()
         cur.execute("""
@@ -29,25 +28,22 @@ def top_niches():
             LIMIT 3;
         """)
         rows = cur.fetchall()
-
         cur.close()
         conn.close()
 
         if not rows:
-            return jsonify({
-                "source": "static",
-                "data": STATIC_NICHES
-            })
+            # Convert STATIC_NICHES dict to a list
+            fallback = [
+                {"niche": key, **value}
+                for key, value in STATIC_NICHES.items()
+            ]
+            return jsonify(fallback)
 
         result = [
             {"niche": row[0], "avg_clicks": row[1], "avg_conversion": row[2]}
             for row in rows
         ]
-
-        return jsonify({
-            "source": "database",
-            "data": result
-        })
+        return jsonify(result)
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
